@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>My Webpage</title>
+</head>
+<body>
+    <h1>My Webpage</h1>
+
+    <ul id="navigation">
+    {% for item in navigation %}
+        <div>
+            <img style="height: 200px; width: 50%" src="{{ item.image_url }}">
+            </img>
+        </div>
+    {% endfor %}
+    </ul>
+
+
+</body>
+</html>

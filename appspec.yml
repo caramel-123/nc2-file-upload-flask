@@ -1,0 +1,36 @@
+version: 0.0
+os: linux
+
+files:
+  - source: main.py
+    destination: /home/ssm-user/file-upload-flask
+
+  - source: requirements.txt
+    destination: /home/ssm-user/file-upload-flask
+
+  - source: db
+    destination: /home/ssm-user/file-upload-flask/db
+
+  - source: templates
+    destination: /home/ssm-user/file-upload-flask/templates
+
+  - source: scripts
+    destination: /home/ssm-user/file-upload-flask/scripts
+
+file_exists_behavior: OVERWRITE
+
+hooks:
+  AfterInstall:
+    - location: scripts/install_dependencies.sh
+      timeout: 300
+      runas: ssm-user
+
+  ApplicationStart:
+    - location: scripts/start_application.sh
+      timeout: 300
+      runas: ssm-user
+
+  ValidateService:
+    - location: scripts/validate_service.sh
+      timeout: 60
+      runas: ssm-user
