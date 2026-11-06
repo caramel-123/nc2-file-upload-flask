@@ -4,6 +4,7 @@ import psycopg2
 
 from flask import Flask, flash, request, redirect, url_for, render_template, send_from_directory
 from werkzeug.utils import secure_filename
+from bson import ObjectId
 from db.mongodb.mongodb_connection import create_mongodb_connection
 
 UPLOAD_FOLDER = os.getenv("UPLOAD_DIRECTORY")
@@ -67,14 +68,20 @@ def upload_file():
             product_name = request.form.get('product_name')
             image_mongodb_id = str(result.inserted_id)
             stock_count = int(request.form.get('initial_stock_count'))
+            price = request.form.get('price')
             review = "Sample Review"
 
-            cur.execute('INSERT INTO products (name, image_mongodb_id, stock_count, review)'
-                        'VALUES (%s, %s, %s, %s)',
-                        (product_name,
-                        image_mongodb_id,
-                        stock_count,
-                        review)
+            cur.execute(
+                'INSERT INTO products '
+                '(name, image_mongodb_id, stock_count, review, price) '
+                'VALUES (%s, %s, %s, %s, %s)',
+                (
+                    product_name,
+                    image_mongodb_id,
+                    stock_count,
+                    review,
+                    price
+                )
             )
 
             conn.commit()
@@ -124,6 +131,71 @@ def show_uploaded_images():
     else:
         return render_template('view_images.html', navigation=parsed)
 
+
+
+
+@app.route('/products', methods=['GET'])
+def view_products():
+    conn = psycopg2.connect(
+        host=os.environ["POSTGRESQL_DB_HOST"],
+        database=os.environ["POSTGRESQL_DB_DATABASE_NAME"],
+        user=os.environ["POSTGRESQL_DB_USERNAME"],
+        password=os.environ["POSTGRESQL_DB_PASSWORD"]
+    )
+
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT id, name, image_mongodb_id, stock_count, "
+        "review, price FROM products ORDER BY id DESC"
+    )
+
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+
+    client, database, collection = create_mongodb_connection(
+        "file-uploads"
+    )
+
+    products = []
+
+    try:
+        for row in rows:
+            product_id, name, image_id, stock, review, price = row
+
+            image_url = None
+
+            try:
+                image = collection.find_one({
+                    "_id": ObjectId(image_id)
+                })
+
+                if image and image.get("file_path"):
+                    image_url = url_for(
+                        "download_file",
+                        name=image["file_path"]
+                    )
+            except Exception:
+                pass
+
+            products.append({
+                "id": product_id,
+                "name": name,
+                "stock_count": stock,
+                "review": review,
+                "price": str(price) if price is not None else None,
+                "image_url": image_url
+            })
+    finally:
+        client.close()
+
+    if ENV_MODE == "backend":
+        return {"data": products}
+
+    return render_template(
+        "view_products.html",
+        products=products
+    )
 
 
 @app.route('/uploads/<name>')

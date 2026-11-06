@@ -1,27 +1,39 @@
 <!doctype html>
 <title>Upload new File</title>
+
 <h1>Upload new File</h1>
-<form method=post enctype=multipart/form-data>
+
+<form method="post" enctype="multipart/form-data">
     <div>
-        <b> Product Name </b>
-        <input type=text name=product_name>
+        <b>Product Name</b>
+        <input type="text" name="product_name" required>
     </div>
 
     <div>
-        <b> Initial Stock Count </b>
-        <input type=text name=initial_stock_count>
+        <b>Initial Stock Count</b>
+        <input type="number" name="initial_stock_count" min="0" required>
     </div>
 
     <div>
-        <b> Raw Image </b>
-        <input type=file name=file>
+        <b>Product Price</b>
+        <input type="number" name="price" min="0.01" step="0.01" required>
+    </div>
+
+    <div>
+        <b>Raw Image</b>
+        <input type="file" name="file" required>
     </div>
 
     <br>
     <br>
 
     <div>
-        <input type=submit value=Upload>
+        <input type="submit" value="Upload">
     </div>
-
 </form>
+
+<br>
+
+<a href="/products">
+    <button type="button">View Products</button>
+</a>

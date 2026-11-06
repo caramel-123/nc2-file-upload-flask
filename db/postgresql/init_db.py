@@ -18,6 +18,7 @@ cur.execute('CREATE TABLE products (id serial PRIMARY KEY,'
                                  'stock_count integer NOT NULL,'
                                  'constraint stock_nonnegative check (stock_count >= 0),'
                                  'review text,'
+                                 'price numeric(10,2) NOT NULL,'
                                  'created_at date DEFAULT CURRENT_TIMESTAMP);'
                                  )
 
